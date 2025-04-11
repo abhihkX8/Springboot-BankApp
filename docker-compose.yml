@@ -1,18 +1,52 @@
-version: "3.8"
-
+#version: '3.8'
+ 
 services:
 
-  mysql:
+  bank-app:
 
-    image: mysql:latest
+    image: bankapp:latest  # Replace with your actual image
 
-    container_name: mysql
+    container_name: bank-app
+
+    depends_on:
+
+      - mysql
+
+    ports:
+
+      - "8081:8080"
 
     environment:
 
-      MYSQL_ROOT_PASSWORD: Test@123
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bankdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
 
-      MYSQL_DATABASE: bankappdb
+      SPRING_DATASOURCE_USERNAME: bankuser
+
+      SPRING_DATASOURCE_PASSWORD: bankpass
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+      SPRING_JPA_SHOW_SQL: "true"
+
+    networks:
+
+      - bank-network
+ 
+  mysql:
+
+    image: mysql:8.0
+
+    container_name: bank-mysql
+
+    environment:
+
+      MYSQL_DATABASE: bankdb
+
+      MYSQL_USER: bankuser
+
+      MYSQL_PASSWORD: bankpass
+
+      MYSQL_ROOT_PASSWORD: rootpass
 
     ports:
 
@@ -20,47 +54,19 @@ services:
 
     volumes:
 
-      - bankapp-volume:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
 
     networks:
 
-      - bankapp
- 
- 
-  mainapp:
-
-    image: bankapp:latest
-
-    container_name: "Bankapp"
-
-    environment:
-
-        SPRING_DATASOURCE_USERNAME: root
-
-        SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bankappdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-
-        SPRING_DATASOURCE_PASSWORD: Test@123
-
-    ports:
-
-      - "8081:8080"
-
-    depends_on:
-
-      - mysql
-
-    networks:
-
-      - bankapp
-
-    restart: always
- 
- 
-networks:
-
-  bankapp:
+      - bank-network
  
 volumes:
 
-    bankapp-volume:
+  mysql_data:
+ 
+networks:
+
+  bank-network:
+
+    driver: bridge
  
